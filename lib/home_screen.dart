@@ -93,6 +93,23 @@ class _HomePageState extends State<HomePage> {
     print(present.toString());
   }
 
+  void deleteData(name) async {
+    var firestore = Firestore.instance;
+    await firestore
+        .collection('attendance')
+        .document(_currentDocument.documentID)
+        .delete()
+        .then((doc) {
+      print("data deleted successful");
+      showAlertDialog(
+          context, "Success", "Student successfully removed from class!");
+    }).catchError((error) {
+      print("doc save error");
+      print(error);
+      showAlertDialog(context, "Error", "Please try again.");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,8 +146,24 @@ class _HomePageState extends State<HomePage> {
                               ),
                               title: Text(name),
                               subtitle: Text(email),
-                              trailing:
-                                  present ? Text("PRESENT") : Text("ABSENT"),
+                              trailing: SizedBox(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    present ? Text("PRESENT") : Text("ABSENT"),
+                                    IconButton(
+                                        icon: Icon(Icons.delete),
+                                        onPressed: () {
+                                          _currentDocument =
+                                              snapshot.data[index];
+                                          deleteData(name);
+                                          setState(() {
+                                            name = "";
+                                          });
+                                        })
+                                  ],
+                                ),
+                              ),
                               onTap: () {
                                 _currentDocument = snapshot.data[index];
                                 setState(() {
@@ -179,7 +212,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-showAlertDialog(BuildContext context) {
+showAlertDialog(BuildContext context, String message, String submessage) {
   // set up the button
   Widget okButton = FlatButton(
     child: Text("Ok"),
@@ -190,9 +223,8 @@ showAlertDialog(BuildContext context) {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text("Failed to Log in"),
-    content:
-        Text("Please make sure that your username and password is correct"),
+    title: Text(message),
+    content: Text(submessage),
     actions: [
       okButton,
     ],

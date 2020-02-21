@@ -80,12 +80,18 @@ class _RegisterStudentState extends State<RegisterStudent> {
           RaisedButton(
             onPressed: () async {
               print(this.email + this.name + this.sid.toString());
+
               Firestore fstore = Firestore.instance;
+              QuerySnapshot qn =
+                  await fstore.collection("attendance").getDocuments();
+              int classSize = qn.documents.length;
+
               fstore.collection("attendance").add({
                 "name": this.name,
                 "email": this.email,
                 "sid": this.sid,
                 "present": present,
+                "seat": classSize + 1,
               }).then((doc) {
                 print("doc save successful");
                 showAlertDialog(
@@ -110,11 +116,12 @@ class _RegisterStudentState extends State<RegisterStudent> {
             child: Center(
               child: Text("Back to Attendance"),
             ),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => HomePage()),
               );
+              setState(() {});
             },
           )
         ],
