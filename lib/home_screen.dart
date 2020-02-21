@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:html' as html;
 import 'package:attendyv2/attendance_screen.dart';
 import 'package:attendyv2/auth_service.dart';
 import 'package:attendyv2/register_student_screen.dart';
+import 'package:csv/csv.dart';
 import 'package:firebase/firebase.dart' as fb;
 import 'package:firebase/firestore.dart' as fs;
 import 'package:flutter/material.dart';
@@ -14,10 +17,61 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   var _currentDocument;
+  String filePath;
+
+  getCsv() async {
+    List<List<dynamic>> rows = List<List<dynamic>>();
+    var cloud =
+        await Firestore.instance.collection("attendance").getDocuments();
+
+    rows.add([
+      "email",
+      "name",
+      "present",
+      "seat",
+      "sid",
+    ]);
+    print("reached here");
+    print(cloud.documents[0]['name']);
+
+    if (cloud.documents != null) {
+      for (int i = 0; i < cloud.documents.length; i++) {
+        print(cloud.documents[i]["name"]);
+        List<dynamic> row = List<dynamic>();
+        row.add(cloud.documents[i]["name"]);
+        row.add(cloud.documents[i]["sid"]);
+        row.add(cloud.documents[i]["seat"]);
+        row.add(cloud.documents[i]["email"]);
+        row.add(cloud.documents[i]["present"]);
+        print(row.toString());
+        rows.add(row);
+      }
+
+      String csv = const ListToCsvConverter().convert(rows);
+
+      // prepare
+      final bytes = utf8.encode(csv);
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.document.createElement('a') as html.AnchorElement
+        ..href = url
+        ..style.display = 'none'
+        ..download = 'some_name.txt';
+      html.document.body.children.add(anchor);
+
+      // download
+      anchor.click();
+
+      // cleanup
+      html.document.body.children.remove(anchor);
+      html.Url.revokeObjectUrl(url);
+    }
+  }
 
   Future getClasses() async {
     var firestore = Firestore.instance;
-    QuerySnapshot qn = await firestore.collection('attendance').getDocuments();
+    QuerySnapshot qn =
+        await firestore.collection('attendance').orderBy("seat").getDocuments();
     return qn.documents;
   }
 
@@ -38,7 +92,7 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text('You are logged in'),
+          Text('Attendance List', style: TextStyle(fontSize: 32)),
           SizedBox(height: 10.0),
           FutureBuilder(
               future: getClasses(),
@@ -56,11 +110,16 @@ class _HomePageState extends State<HomePage> {
                         String name = snapshot.data[index].data["name"];
                         String email = snapshot.data[index].data["email"];
                         int sid = snapshot.data[index].data["sid"];
+                        int seat = snapshot.data[index].data["seat"];
                         bool present = snapshot.data[index].data["present"];
                         return Container(
                           color:
                               present ? Colors.greenAccent : Colors.redAccent,
                           child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                child: Text(seat.toString()),
+                              ),
                               title: Text(name),
                               subtitle: Text(email),
                               trailing:
@@ -97,7 +156,16 @@ class _HomePageState extends State<HomePage> {
               child: Text('Register New Student'),
             ),
             color: Colors.blueAccent,
-          )
+          ),
+          RaisedButton(
+            onPressed: () {
+              getCsv();
+            },
+            child: Center(
+              child: Text('Export CSV'),
+            ),
+            color: Colors.blueAccent,
+          ),
         ],
       ),
     );

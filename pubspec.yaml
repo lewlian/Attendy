@@ -26,6 +26,9 @@ dependencies:
   firebase_auth:
   firebase_auth_web:
   cloud_firestore: ^0.13.2
+  csv: ^4.0.3
+  path_provider: ^1.4.4
+  flutter_email_sender: ^2.2.0
 
 dev_dependencies:
   flutter_test:
