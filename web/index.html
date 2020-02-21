@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="attendyv2">
+  <link rel="apple-touch-icon" href="/icons/Icon-192.png">
+
+  <title>attendyv2</title>
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+  <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-firestore.js"></script>
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyD1osluQ1O6FYlvnST-cNnOFtVGlr1B36I",
+      authDomain: "attendy-72af0.firebaseapp.com",
+      databaseURL: "https://attendy-72af0.firebaseio.com",
+      projectId: "attendy-72af0",
+      storageBucket: "attendy-72af0.appspot.com",
+      messagingSenderId: "1013975099042",
+      appId: "1:1013975099042:web:32ca6247ea87f4ff7319fb",
+      measurementId: "G-RN8X73VQ56"
+    }
+    firebase.initializeApp(firebaseConfig);
+
+  </script>
+  <!-- This script installs service_worker.js to provide PWA functionality to
+       application. For more information, see:
+       https://developers.google.com/web/fundamentals/primers/service-workers -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/flutter_service_worker.js');
+      });
+    }
+  </script>
+  <script src="main.dart.js" type="application/javascript"></script>
+</body>
+</html>
