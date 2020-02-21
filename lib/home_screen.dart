@@ -9,6 +9,7 @@ import 'package:firebase/firestore.dart' as fs;
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -31,8 +32,10 @@ class _HomePageState extends State<HomePage> {
       "seat",
       "sid",
     ]);
-    print("reached here");
-    print(cloud.documents[0]['name']);
+    var now = new DateTime.now();
+    var formatter = new DateFormat('yyyy-MM-dd');
+    String dateFormatted = formatter.format(now);
+    print(dateFormatted);
 
     if (cloud.documents != null) {
       for (int i = 0; i < cloud.documents.length; i++) {
@@ -42,7 +45,11 @@ class _HomePageState extends State<HomePage> {
         row.add(cloud.documents[i]["sid"]);
         row.add(cloud.documents[i]["seat"]);
         row.add(cloud.documents[i]["email"]);
-        row.add(cloud.documents[i]["present"]);
+        if (cloud.documents[i]["present"]) {
+          row.add("present");
+        } else {
+          row.add("absent");
+        }
         print(row.toString());
         rows.add(row);
       }
@@ -56,7 +63,7 @@ class _HomePageState extends State<HomePage> {
       final anchor = html.document.createElement('a') as html.AnchorElement
         ..href = url
         ..style.display = 'none'
-        ..download = 'some_name.txt';
+        ..download = 'attendance$dateFormatted.csv';
       html.document.body.children.add(anchor);
 
       // download

@@ -29,7 +29,8 @@ dependencies:
   csv: ^4.0.3
   path_provider: ^1.4.4
   flutter_email_sender: ^2.2.0
-
+  intl: ^0.15.7
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
