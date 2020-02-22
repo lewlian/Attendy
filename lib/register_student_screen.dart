@@ -92,6 +92,7 @@ class _RegisterStudentState extends State<RegisterStudent> {
                 "sid": this.sid,
                 "present": present,
                 "seat": classSize + 1,
+                "comments": "",
               }).then((doc) {
                 print("doc save successful");
                 showAlertDialog(

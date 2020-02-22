@@ -19,18 +19,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   var _currentDocument;
   String filePath;
-
+  int _classSize;
   getCsv() async {
     List<List<dynamic>> rows = List<List<dynamic>>();
     var cloud =
         await Firestore.instance.collection("attendance").getDocuments();
 
     rows.add([
-      "email",
       "name",
-      "present",
-      "seat",
       "sid",
+      "seat",
+      "email",
+      "present",
     ]);
     var now = new DateTime.now();
     var formatter = new DateFormat('yyyy-MM-dd');
@@ -79,6 +79,7 @@ class _HomePageState extends State<HomePage> {
     var firestore = Firestore.instance;
     QuerySnapshot qn =
         await firestore.collection('attendance').orderBy("seat").getDocuments();
+    _classSize = qn.documents.length;
     return qn.documents;
   }
 
@@ -136,6 +137,7 @@ class _HomePageState extends State<HomePage> {
                         int sid = snapshot.data[index].data["sid"];
                         int seat = snapshot.data[index].data["seat"];
                         bool present = snapshot.data[index].data["present"];
+                        String comments = snapshot.data[index].data["comments"];
                         return Container(
                           color:
                               present ? Colors.greenAccent : Colors.redAccent,
@@ -150,6 +152,32 @@ class _HomePageState extends State<HomePage> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: <Widget>[
+                                    DropdownButton<String>(
+                                      items: List<int>.generate(
+                                              _classSize, (i) => i + 1)
+                                          .map((int value) {
+                                        return new DropdownMenuItem<String>(
+                                          value: value.toString(),
+                                          child: new Text(value.toString()),
+                                        );
+                                      }).toList(),
+                                      onChanged: (_) {},
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SizedBox(
+                                        width: 200,
+                                        child: TextFormField(
+                                          initialValue: comments,
+                                          textAlign: TextAlign.center,
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            hintText: 'comments',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                     present ? Text("PRESENT") : Text("ABSENT"),
                                     IconButton(
                                         icon: Icon(Icons.delete),
