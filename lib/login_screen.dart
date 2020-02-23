@@ -35,10 +35,14 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
         body: Center(
             child: Container(
-                height: 250.0,
                 width: 300.0,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Image.asset('assets/images/logo.jpg', height: 200),
+                    ),
                     Form(
                         key: formKey,
                         child: Column(
@@ -83,24 +87,27 @@ class _LoginPageState extends State<LoginPage> {
                                     },
                                   ),
                                 )),
-                            InkWell(
-                                onTap: () {
-                                  if (checkFields()) {
-                                    try {
-                                      AuthService().signIn(email, password);
-                                    } on Exception {
-                                      showAlertDialog(context);
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: InkWell(
+                                  onTap: () {
+                                    if (checkFields()) {
+                                      try {
+                                        AuthService().signIn(email, password);
+                                      } on Exception {
+                                        showAlertDialog(context);
+                                      }
+                                      ;
                                     }
-                                    ;
-                                  }
-                                },
-                                child: Container(
-                                    height: 40.0,
-                                    width: 100.0,
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(0.2),
-                                    ),
-                                    child: Center(child: Text('Sign in'))))
+                                  },
+                                  child: Container(
+                                      height: 40.0,
+                                      width: 100.0,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.2),
+                                      ),
+                                      child: Center(child: Text('Sign in')))),
+                            )
                           ],
                         ))
                   ],

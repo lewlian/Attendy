@@ -25,13 +25,7 @@ class _HomePageState extends State<HomePage> {
     var cloud =
         await Firestore.instance.collection("attendance").getDocuments();
 
-    rows.add([
-      "name",
-      "sid",
-      "seat",
-      "email",
-      "present",
-    ]);
+    rows.add(["name", "sid", "seat", "email", "present", "comments"]);
     var now = new DateTime.now();
     var formatter = new DateFormat('yyyy-MM-dd');
     String dateFormatted = formatter.format(now);
@@ -50,6 +44,8 @@ class _HomePageState extends State<HomePage> {
         } else {
           row.add("absent");
         }
+        row.add(cloud.documents[i]["comments"]);
+
         print(row.toString());
         rows.add(row);
       }
@@ -91,6 +87,14 @@ class _HomePageState extends State<HomePage> {
         .updateData({'seat': value});
   }
 
+  void updateComments(value) async {
+    var firestore = Firestore.instance;
+    await firestore
+        .collection('attendance')
+        .document(_currentDocument.documentID)
+        .updateData({'comments': value});
+  }
+
   void updateData(present) async {
     var firestore = Firestore.instance;
     await firestore
@@ -125,110 +129,172 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text('Attendance List', style: TextStyle(fontSize: 32)),
-          SizedBox(height: 10.0),
-          FutureBuilder(
-              future: getClasses(),
-              builder: (_, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: Text('loading...'),
-                  );
-                } else {
-                  return Container(
-                    height: 400,
-                    child: ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (_, index) {
-                          String name = snapshot.data[index].data["name"];
-                          String email = snapshot.data[index].data["email"];
-                          int sid = snapshot.data[index].data["sid"];
-                          int seat = snapshot.data[index].data["seat"];
-                          bool present = snapshot.data[index].data["present"];
-                          String comments =
-                              snapshot.data[index].data["comments"];
-                          return Container(
-                            padding: EdgeInsets.all(8.0),
-                            margin: EdgeInsets.only(left: 10, right: 10),
-                            decoration: BoxDecoration(
-                                color: present
-                                    ? Colors.greenAccent
-                                    : Colors.redAccent,
-                                border: Border(bottom: BorderSide())),
-                            child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  child: Text(seat.toString()),
-                                ),
-                                title: Text(name),
-                                subtitle: Text(email),
-                                trailing: SizedBox(
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      Text("edit seat"),
-                                      DropdownButton<String>(
-                                        items: List<int>.generate(
-                                                _classSize, (i) => i + 1)
-                                            .map((int value) {
-                                          return new DropdownMenuItem<String>(
-                                            value: value.toString(),
-                                            child: new Text(value.toString()),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          _currentDocument =
-                                              snapshot.data[index];
-                                          updateSeat(int.parse(value));
-                                          setState(() {});
-                                        },
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: SizedBox(
-                                          width: 200,
-                                          child: TextFormField(
-                                            initialValue: comments,
-                                            textAlign: TextAlign.center,
-                                            decoration: InputDecoration(
-                                              filled: true,
-                                              fillColor: Colors.white,
-                                              hintText: 'comments',
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black, width: 5)),
+                  padding: EdgeInsets.all(20),
+                  margin: EdgeInsets.only(left: 30, right: 30),
+                  child: Image.asset(
+                    'assets/images/whiteboard.png',
+                    height: 500,
+                    width: 500,
+                    fit: BoxFit.fitWidth,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.black,
+                      border: Border.all(color: Colors.black, width: 5)),
+                  child: Column(
+                    children: <Widget>[
+                      Text('Attendance List',
+                          style: TextStyle(fontSize: 32, color: Colors.white)),
+                      FutureBuilder(
+                          future: getClasses(),
+                          builder: (_, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(
+                                child: Text('loading...'),
+                              );
+                            } else {
+                              return Container(
+                                height: 600,
+                                child: ListView.builder(
+                                    scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
+                                    itemCount: snapshot.data.length,
+                                    itemBuilder: (_, index) {
+                                      FocusNode _focusNode = FocusNode();
+                                      _focusNode.addListener(() {
+                                        if (!_focusNode.hasFocus) {}
+                                      });
+                                      String name =
+                                          snapshot.data[index].data["name"];
+                                      String email =
+                                          snapshot.data[index].data["email"];
+                                      int sid =
+                                          snapshot.data[index].data["sid"];
+                                      int seat =
+                                          snapshot.data[index].data["seat"];
+                                      bool present =
+                                          snapshot.data[index].data["present"];
+                                      String comments;
+                                      comments =
+                                          snapshot.data[index].data["comments"];
+
+                                      return Container(
+                                        padding: EdgeInsets.all(8.0),
+                                        decoration: BoxDecoration(
+                                            color: present
+                                                ? Colors.greenAccent
+                                                : Colors.redAccent,
+                                            border:
+                                                Border(bottom: BorderSide())),
+                                        child: ListTile(
+                                            leading: CircleAvatar(
+                                              backgroundColor: Colors.white,
+                                              child: Text(seat.toString()),
                                             ),
-                                          ),
-                                        ),
-                                      ),
-                                      present
-                                          ? Text("PRESENT")
-                                          : Text("ABSENT"),
-                                      IconButton(
-                                          icon: Icon(Icons.delete),
-                                          onPressed: () {
-                                            _currentDocument =
-                                                snapshot.data[index];
-                                            deleteData(name);
-                                            setState(() {
-                                              name = "";
-                                            });
-                                          })
-                                    ],
-                                  ),
-                                ),
-                                onTap: () {
-                                  _currentDocument = snapshot.data[index];
-                                  setState(() {
-                                    present = !present;
-                                  });
-                                  updateData(present);
-                                }),
-                          );
-                        }),
-                  );
-                }
-              }),
-          SizedBox(height: 10),
+                                            title: Text(name),
+                                            subtitle: Text(email),
+                                            trailing: SizedBox(
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  Text("edit seat"),
+                                                  DropdownButton<String>(
+                                                    items: List<int>.generate(
+                                                            _classSize,
+                                                            (i) => i + 1)
+                                                        .map((int value) {
+                                                      return new DropdownMenuItem<
+                                                          String>(
+                                                        value: value.toString(),
+                                                        child: new Text(
+                                                            value.toString()),
+                                                      );
+                                                    }).toList(),
+                                                    onChanged: (value) {
+                                                      _currentDocument =
+                                                          snapshot.data[index];
+                                                      updateSeat(
+                                                          int.parse(value));
+                                                      setState(() {});
+                                                    },
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: SizedBox(
+                                                      width: 200,
+                                                      child: TextFormField(
+                                                        initialValue: comments,
+                                                        onChanged: (value) {
+                                                          print(value);
+                                                          comments = value;
+                                                        },
+                                                        onEditingComplete: () {
+                                                          _currentDocument =
+                                                              snapshot
+                                                                  .data[index];
+                                                          updateComments(
+                                                              comments);
+                                                        },
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        decoration:
+                                                            InputDecoration(
+                                                          filled: true,
+                                                          fillColor:
+                                                              Colors.white,
+                                                          hintText: 'comments',
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  present
+                                                      ? Text("PRESENT")
+                                                      : Text("ABSENT"),
+                                                  IconButton(
+                                                      icon: Icon(Icons.delete),
+                                                      onPressed: () {
+                                                        _currentDocument =
+                                                            snapshot
+                                                                .data[index];
+                                                        deleteData(name);
+                                                        setState(() {
+                                                          name = "";
+                                                        });
+                                                      })
+                                                ],
+                                              ),
+                                            ),
+                                            onTap: () {
+                                              _currentDocument =
+                                                  snapshot.data[index];
+                                              setState(() {
+                                                present = !present;
+                                              });
+                                              updateData(present);
+                                            }),
+                                      );
+                                    }),
+                              );
+                            }
+                          }),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
