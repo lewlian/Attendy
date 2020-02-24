@@ -4,12 +4,11 @@ import 'package:attendyv2/attendance_screen.dart';
 import 'package:attendyv2/auth_service.dart';
 import 'package:attendyv2/register_student_screen.dart';
 import 'package:csv/csv.dart';
-import 'package:firebase/firebase.dart' as fb;
-import 'package:firebase/firestore.dart' as fs;
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -17,6 +16,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String rEmail;
+  String subject;
+  String body;
   var _currentDocument;
   String filePath;
   int _classSize;
@@ -125,28 +127,40 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    MediaQueryData queryData;
+    queryData = MediaQuery.of(context);
     return Scaffold(
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Image.asset('assets/images/logo.jpg', height: 100),
+          ),
           Row(
             children: <Widget>[
               Expanded(
                 child: Container(
+                  height: queryData.size.height * 0.6,
+                  width: queryData.size.width * 0.25,
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.black, width: 5)),
                   padding: EdgeInsets.all(20),
                   margin: EdgeInsets.only(left: 30, right: 30),
-                  child: Image.asset(
-                    'assets/images/whiteboard.png',
-                    height: 500,
-                    width: 500,
-                    fit: BoxFit.fitWidth,
+                  child: Column(
+                    children: <Widget>[
+                      Text("CLASSROOM LAYOUT", style: TextStyle(fontSize: 32)),
+                      Image.asset(
+                        'assets/images/whiteboard.png',
+                        fit: BoxFit.fitWidth,
+                      ),
+                    ],
                   ),
                 ),
               ),
               Expanded(
                 child: Container(
+                  margin: EdgeInsets.all(30),
                   decoration: BoxDecoration(
                       color: Colors.black,
                       border: Border.all(color: Colors.black, width: 5)),
@@ -164,7 +178,8 @@ class _HomePageState extends State<HomePage> {
                               );
                             } else {
                               return Container(
-                                height: 600,
+                                height: queryData.size.height * 0.6,
+                                width: queryData.size.width * 0.75,
                                 child: ListView.builder(
                                     scrollDirection: Axis.vertical,
                                     shrinkWrap: true,
@@ -298,6 +313,71 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(left: 10.0, right: 10),
+                child: SizedBox(
+                  width: 200,
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: "Receiver Email",
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      rEmail = value;
+                    },
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 10.0, right: 10),
+                child: SizedBox(
+                  width: 200,
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: "Subject",
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      subject = value;
+                    },
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 10.0, right: 10),
+                child: SizedBox(
+                  width: 400,
+                  child: TextFormField(
+                      decoration: InputDecoration(
+                        labelText: "Body",
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        body = value;
+                      }),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.all(20),
+                child: RaisedButton(
+                  onPressed: () {
+                    _launchURL(rEmail, subject, body);
+                  },
+                  child: Center(
+                    child: Text('Create Email'),
+                  ),
+                  color: Colors.greenAccent,
+                ),
+              ),
               Container(
                 margin: EdgeInsets.all(20),
                 child: RaisedButton(
@@ -343,6 +423,21 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+}
+
+_launchURL(rEmail, subject, body) async {
+  String url = 'https://mail.google.com/mail/u/0/?view=cm&fs=1&to=' +
+      rEmail +
+      '&su=' +
+      subject +
+      '&body=' +
+      body +
+      '&tf=1';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
   }
 }
 
