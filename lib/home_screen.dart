@@ -22,6 +22,48 @@ class _HomePageState extends State<HomePage> {
   var _currentDocument;
   String filePath;
   int _classSize;
+
+  getSeatingCsv() async {
+    List<List<dynamic>> rows = List<List<dynamic>>();
+    var cloud =
+        await Firestore.instance.collection("attendance").getDocuments();
+
+    rows.add(["name", "sid", "seat"]);
+    var now = new DateTime.now();
+    var formatter = new DateFormat('yyyy-MM-dd');
+    String dateFormatted = formatter.format(now);
+    print(dateFormatted);
+
+    if (cloud.documents != null) {
+      for (int i = 0; i < cloud.documents.length; i++) {
+        List<dynamic> row = List<dynamic>();
+        row.add(cloud.documents[i]["name"]);
+        row.add(cloud.documents[i]["sid"]);
+        row.add(cloud.documents[i]["seat"]);
+        rows.add(row);
+      }
+
+      String csv = const ListToCsvConverter().convert(rows);
+
+      // prepare
+      final bytes = utf8.encode(csv);
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.document.createElement('a') as html.AnchorElement
+        ..href = url
+        ..style.display = 'none'
+        ..download = 'seatingArrangement$dateFormatted.csv';
+      html.document.body.children.add(anchor);
+
+      // download
+      anchor.click();
+
+      // cleanup
+      html.document.body.children.remove(anchor);
+      html.Url.revokeObjectUrl(url);
+    }
+  }
+
   getCsv() async {
     List<List<dynamic>> rows = List<List<dynamic>>();
     var cloud =
@@ -217,7 +259,9 @@ class _HomePageState extends State<HomePage> {
                                               child: Text(seat.toString()),
                                             ),
                                             title: Text(name),
-                                            subtitle: Text(email),
+                                            subtitle: Text(email,
+                                                style:
+                                                    (TextStyle(fontSize: 10))),
                                             trailing: SizedBox(
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
@@ -311,12 +355,12 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(left: 10.0, right: 10),
                 child: SizedBox(
-                  width: 200,
+                  width: 150,
                   child: TextFormField(
                     decoration: InputDecoration(
                       labelText: "Receiver Email",
@@ -334,7 +378,7 @@ class _HomePageState extends State<HomePage> {
               Padding(
                 padding: const EdgeInsets.only(left: 10.0, right: 10),
                 child: SizedBox(
-                  width: 200,
+                  width: 150,
                   child: TextFormField(
                     decoration: InputDecoration(
                       labelText: "Subject",
@@ -352,7 +396,7 @@ class _HomePageState extends State<HomePage> {
               Padding(
                 padding: const EdgeInsets.only(left: 10.0, right: 10),
                 child: SizedBox(
-                  width: 400,
+                  width: 300,
                   child: TextFormField(
                       decoration: InputDecoration(
                         labelText: "Body",
@@ -402,6 +446,18 @@ class _HomePageState extends State<HomePage> {
                   },
                   child: Center(
                     child: Text('Register New Student'),
+                  ),
+                  color: Colors.blueAccent,
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.all(20),
+                child: RaisedButton(
+                  onPressed: () {
+                    getSeatingCsv();
+                  },
+                  child: Center(
+                    child: Text('Export Seating Plan'),
                   ),
                   color: Colors.blueAccent,
                 ),

@@ -18,18 +18,21 @@ class AuthService {
   }
 
   //Sign  out
-  signOut() {
-    FirebaseAuth.instance.signOut();
+  signOut() async {
+    await FirebaseAuth.instance.signOut();
   }
 
   // Sign in
-  signIn(email, password) {
-    FirebaseAuth.instance
-        .signInWithEmailAndPassword(email: email, password: password)
-        .then((user) {
-      return ('Login Success');
-    }).catchError((e) {
-      throw (e);
-    });
+  signIn(email, password) async {
+    try {
+      FirebaseAuth _auth = FirebaseAuth.instance;
+      AuthResult result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      return result.user.uid;
+    } catch (e) {
+      print('Error auth: $e');
+      return (e);
+    }
+    ;
   }
 }

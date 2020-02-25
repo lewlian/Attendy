@@ -92,12 +92,8 @@ class _LoginPageState extends State<LoginPage> {
                               child: InkWell(
                                   onTap: () {
                                     if (checkFields()) {
-                                      try {
-                                        AuthService().signIn(email, password);
-                                      } on Exception {
-                                        showAlertDialog(context);
-                                      }
-                                      ;
+                                      var res =
+                                          AuthService().signIn(email, password);
                                     }
                                   },
                                   child: Container(
@@ -107,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                                         color: Colors.green.withOpacity(0.2),
                                       ),
                                       child: Center(child: Text('Sign in')))),
-                            )
+                            ),
                           ],
                         ))
                   ],
